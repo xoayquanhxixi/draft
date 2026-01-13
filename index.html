@@ -1,205 +1,202 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Simple Photo Booth</title>
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
     body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0f1220; color: #e7e9ff;
-    }
-    .app {
-      width: min(900px, 96vw); padding: 16px; display: grid; gap: 16px;
-    }
-    .stage {
-      position: relative; background: #0b0e1a; border-radius: 16px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.4);
-      display: grid; grid-template-columns: 1fr; place-items: center; overflow: hidden;
-    }
-    video, canvas {
-      width: 100%; max-height: 70vh; border-radius: 12px; background: #000; object-fit: cover;
-    }.controls {
-  display: flex; gap: 12px; justify-content: center; align-items: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1b1f3b, #2a2f60);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }h1 {
+  margin-bottom: 15px;
 }
+
+.box {
+  background: #11142a;
+  padding: 18px;
+  border-radius: 14px;
+  max-width: 520px;
+  margin: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+video {
+  width: 100%;
+  border-radius: 12px;
+  background: black;
+}
+
 button {
-  border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 600; cursor: pointer;
-  background: #5c6cff; color: white; box-shadow: 0 6px 16px rgba(92,108,255,.35);
-}
-button.secondary {
-  background: #2a2f60; box-shadow: none; color: #cfd4ff;
-}
-button:disabled { opacity: .5; cursor: not-allowed; }
-
-/* Countdown */
-.countdown {
-  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
-  font-size: clamp(64px, 18vw, 160px); font-weight: 800; color: white; text-shadow: 0 10px 40px rgba(0,0,0,.6);
-  opacity: 0; transition: opacity .2s ease;
-}
-.countdown.show { opacity: 1; }
-
-/* Polaroid reveal */
-.polaroid {
-  position: absolute; left: 50%; top: 100%; transform: translate(-50%, 0) rotate(-2deg);
-  width: min(360px, 80vw); background: #f7f7f7; border-radius: 8px; padding: 12px 12px 40px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.5);
-  animation: none;
-}
-.polaroid img {
-  width: 100%; border-radius: 6px; display: block; background: #111;
-}
-.polaroid .label {
-  margin-top: 10px; text-align: center; color: #333; font-weight: 600; letter-spacing: .02em;
-}
-.polaroid.reveal {
-  animation: pop 900ms cubic-bezier(.2,.8,.2,1) forwards;
-}
-@keyframes pop {
-  0%   { top: 110%; opacity: 0; }
-  60%  { top: 55%; opacity: 1; }
-  100% { top: 50%; opacity: 1; }
+  margin: 10px 6px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.1s ease;
 }
 
-.footer {
-  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
-  color: #aeb4ff; font-size: 14px;
+button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+#take {
+  background: #4f63ff;
+  color: white;
+}
+
+#save {
+  background: #555;
+  color: white;
+}
+
+#countdown {
+  font-size: 80px;
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  text-shadow: 0 5px 15px rgba(0,0,0,0.6);
+}
+
+#polaroid {
+  margin-top: 20px;
+  background: white;
+  color: black;
+  padding: 12px 12px 45px;
+  border-radius: 8px;
+  display: none;
+  animation: slideUp 0.8s ease;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+#polaroid img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+#polaroid p {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(200px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
   </style>
 </head>
-<body>
-  <div class="app">
-    <div class="stage">
-      <video id="video" autoplay playsinline></video>
-      <canvas id="canvas" hidden></canvas><div id="countdown" class="countdown">3</div>
+<body>  <h1>My Photo Booth</h1>  <div class="box">
+    <video id="video" autoplay></video>
+    <div id="countdown">3</div><br>
+<button id="take">Take Picture</button>
+<button id="save" disabled>Save Photo</button>
 
-  <!-- Polaroid preview (created dynamically) -->
-  <div id="polaroid" class="polaroid" hidden>
-    <img id="photo" alt="Your photo" />
-    <div class="label">Just taken</div>
-  </div>
-</div>
+<canvas id="canvas" style="display:none;"></canvas>
 
-<div class="controls">
-  <button id="snap">Take Picture</button>
-  <button id="save" class="secondary" disabled>Save Photo</button>
-</div>
-
-<div class="footer">
-  <span>High-school level demo: camera → countdown → capture → polaroid animation → save.</span>
-  <span>Allow camera when prompted.</span>
+<div id="polaroid">
+  <img id="photo">
+  <p id="label">Just taken</p>
 </div>
 
   </div>  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const snapBtn = document.getElementById('snap');
-    const saveBtn = document.getElementById('save');
-    const countdownEl = document.getElementById('countdown');
-    const polaroid = document.getElementById('polaroid');
-    const photoImg = document.getElementById('photo');
+    const video = document.getElementById("video");
+    const takeBtn = document.getElementById("take");
+    const saveBtn = document.getElementById("save");
+    const canvas = document.getElementById("canvas");
+    const photo = document.getElementById("photo");
+    const countdown = document.getElementById("countdown");
+    const polaroid = document.getElementById("polaroid");
+    const label = document.getElementById("label");
 
-    // Start camera
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
         video.srcObject = stream;
-      } catch (err) {
-        alert('Camera access was blocked. Please allow camera and reload.');
-      }
-    }
-
-    startCamera();
-
-    // Countdown helper
-    function runCountdown(seconds = 3) {
-      return new Promise((resolve) => {
-        let current = seconds;
-        countdownEl.textContent = current;
-        countdownEl.classList.add('show');
-        const interval = setInterval(() => {
-          current--;
-          if (current <= 0) {
-            clearInterval(interval);
-            countdownEl.classList.remove('show');
-            resolve();
-          } else {
-            countdownEl.textContent = current;
-          }
-        }, 1000);
+      })
+      .catch(() => {
+        alert("Camera not allowed");
       });
+
+    takeBtn.onclick = () => {
+      let time = 3;
+      countdown.innerText = time;
+      countdown.style.display = "block";
+
+      const timer = setInterval(() => {
+        time--;
+        if (time === 0) {
+          clearInterval(timer);
+          countdown.style.display = "none";
+          takePhoto();
+        } else {
+          countdown.innerText = time;
+        }
+      }, 1000);
+    };
+
+    function getDateString() {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const year = now.getFullYear();
+      return month + "/" + day + "/" + year;
     }
 
-    // Take picture
-    snapBtn.addEventListener('click', async () => {
-      snapBtn.disabled = true;
-      saveBtn.disabled = true;
-
-      // Reset previous polaroid
-      polaroid.hidden = true;
-      polaroid.classList.remove('reveal');
-
-      await runCountdown(3);
-
-      // Draw video frame to canvas
+    function takePhoto() {
       const width = video.videoWidth;
       const height = video.videoHeight;
+
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d');
+
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, width, height);
 
-      // Convert to image
-      const dataUrl = canvas.toDataURL('image/png');
-      photoImg.src = dataUrl;
+      const imageData = canvas.toDataURL("image/png");
+      photo.src = imageData;
 
-      // Show polaroid animation
-      polaroid.hidden = false;
-      // Force reflow to restart animation
-      void polaroid.offsetWidth;
-      polaroid.classList.add('reveal');
+      label.innerText = "Taken on " + getDateString();
 
+      polaroid.style.display = "block";
       saveBtn.disabled = false;
-      snapBtn.disabled = false;
-    });
+    }
 
-    // Save photo (with polaroid frame)
-    saveBtn.addEventListener('click', () => {
-      if (!photoImg.src) return;
-
-      // Build a Polaroid-style frame onto the canvas before saving
+    saveBtn.onclick = () => {
       const img = new Image();
+      img.src = photo.src;
+
       img.onload = () => {
-        const pad = 24;           // white border around the photo
-        const bottom = 80;        // extra space for the label
-        const w = img.naturalWidth + pad * 2;
-        const h = img.naturalHeight + pad * 2 + bottom;
+        const border = 20;
+        const bottom = 60;
 
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
+        canvas.width = img.width + border * 2;
+        canvas.height = img.height + border * 2 + bottom;
 
-        // White polaroid background
-        ctx.fillStyle = '#f7f7f7';
-        ctx.fillRect(0, 0, w, h);
+        const ctx = canvas.getContext("2d");
 
-        // Photo
-        ctx.drawImage(img, pad, pad, img.naturalWidth, img.naturalHeight);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Label text
-        ctx.fillStyle = '#333';
-        ctx.font = '600 18px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Just taken', w / 2, h - 36);
+        ctx.drawImage(img, border, border);
 
-        // Download
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = 'polaroid-photo.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Taken on " + getDateString(), canvas.width / 2, canvas.height - 20);
+
+        const link = document.createElement("a");
+        link.download = "polaroid.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
       };
-      img.src = photoImg.src;
-    });
+    };
   </script></body>
 </html>
