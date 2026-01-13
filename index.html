@@ -162,15 +162,44 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       snapBtn.disabled = false;
     });
 
-    // Save photo
+    // Save photo (with polaroid frame)
     saveBtn.addEventListener('click', () => {
       if (!photoImg.src) return;
-      const a = document.createElement('a');
-      a.href = photoImg.src;
-      a.download = 'photo.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+
+      // Build a Polaroid-style frame onto the canvas before saving
+      const img = new Image();
+      img.onload = () => {
+        const pad = 24;           // white border around the photo
+        const bottom = 80;        // extra space for the label
+        const w = img.naturalWidth + pad * 2;
+        const h = img.naturalHeight + pad * 2 + bottom;
+
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+
+        // White polaroid background
+        ctx.fillStyle = '#f7f7f7';
+        ctx.fillRect(0, 0, w, h);
+
+        // Photo
+        ctx.drawImage(img, pad, pad, img.naturalWidth, img.naturalHeight);
+
+        // Label text
+        ctx.fillStyle = '#333';
+        ctx.font = '600 18px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Just taken', w / 2, h - 36);
+
+        // Download
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'polaroid-photo.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+      img.src = photoImg.src;
     });
   </script></body>
 </html>
