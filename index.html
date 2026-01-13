@@ -1,202 +1,29 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simple Photo Booth</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1b1f3b, #2a2f60);
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }h1 {
-  margin-bottom: 15px;
-}
-
-.box {
-  background: #11142a;
-  padding: 18px;
-  border-radius: 14px;
-  max-width: 520px;
-  margin: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
-
-video {
-  width: 100%;
-  border-radius: 12px;
-  background: black;
-}
-
-button {
-  margin: 10px 6px;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.1s ease;
-}
-
-button:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
-}
-
-#take {
-  background: #4f63ff;
-  color: white;
-}
-
-#save {
-  background: #555;
-  color: white;
-}
-
-#countdown {
-  font-size: 80px;
-  font-weight: bold;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: none;
-  text-shadow: 0 5px 15px rgba(0,0,0,0.6);
-}
-
-#polaroid {
-  margin-top: 20px;
-  background: white;
-  color: black;
-  padding: 12px 12px 45px;
-  border-radius: 8px;
-  display: none;
-  animation: slideUp 0.8s ease;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-}
-
-#polaroid img {
-  width: 100%;
-  border-radius: 6px;
-}
-
-#polaroid p {
-  margin: 10px 0 0;
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(200px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Korean Photo Booth</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>  <h1>My Photo Booth</h1>  <div class="box">
-    <video id="video" autoplay></video>
-    <div id="countdown">3</div><br>
-<button id="take">Take Picture</button>
-<button id="save" disabled>Save Photo</button>
-
-<canvas id="canvas" style="display:none;"></canvas>
-
-<div id="polaroid">
-  <img id="photo">
-  <p id="label">Just taken</p>
+<body>
+  <div class="booth">
+    <h1>PHOTO BOOTH</h1>
+    <p class="subtitle">k-style memories</p><div class="camera-container">
+  <video id="video" autoplay playsinline></video>
+  <div class="countdown" id="countdown">3</div>
 </div>
 
-  </div>  <script>
-    const video = document.getElementById("video");
-    const takeBtn = document.getElementById("take");
-    const saveBtn = document.getElementById("save");
-    const canvas = document.getElementById("canvas");
-    const photo = document.getElementById("photo");
-    const countdown = document.getElementById("countdown");
-    const polaroid = document.getElementById("polaroid");
-    const label = document.getElementById("label");
+<canvas id="canvas"></canvas>
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(() => {
-        alert("Camera not allowed");
-      });
+<button id="takePhotoBtn">Take Photo</button>
 
-    takeBtn.onclick = () => {
-      let time = 3;
-      countdown.innerText = time;
-      countdown.style.display = "block";
+<div class="photo-preview" id="photoPreview">
+  <div class="frame">
+    <img id="photoResult" />
+    <div class="date-text" id="dateText"></div>
+  </div>
+  <a id="downloadLink" download="photo.png">Download Photo</a>
+</div>
 
-      const timer = setInterval(() => {
-        time--;
-        if (time === 0) {
-          clearInterval(timer);
-          countdown.style.display = "none";
-          takePhoto();
-        } else {
-          countdown.innerText = time;
-        }
-      }, 1000);
-    };
-
-    function getDateString() {
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      const year = now.getFullYear();
-      return month + "/" + day + "/" + year;
-    }
-
-    function takePhoto() {
-      const width = video.videoWidth;
-      const height = video.videoHeight;
-
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, width, height);
-
-      const imageData = canvas.toDataURL("image/png");
-      photo.src = imageData;
-
-      label.innerText = "Taken on " + getDateString();
-
-      polaroid.style.display = "block";
-      saveBtn.disabled = false;
-    }
-
-    saveBtn.onclick = () => {
-      const img = new Image();
-      img.src = photo.src;
-
-      img.onload = () => {
-        const border = 20;
-        const bottom = 60;
-
-        canvas.width = img.width + border * 2;
-        canvas.height = img.height + border * 2 + bottom;
-
-        const ctx = canvas.getContext("2d");
-
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.drawImage(img, border, border);
-
-        ctx.fillStyle = "black";
-        ctx.font = "16px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("Taken on " + getDateString(), canvas.width / 2, canvas.height - 20);
-
-        const link = document.createElement("a");
-        link.download = "polaroid.png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      };
-    };
-  </script></body>
+  </div>  <script src="script.js"></script></body>
 </html>
