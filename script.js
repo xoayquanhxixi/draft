@@ -16,20 +16,21 @@ async function startCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
     video.srcObject = stream;
 
-    // Wait until video metadata is loaded to get correct width/height
+    // Wait until video metadata loads to get correct dimensions
     video.onloadedmetadata = () => {
       videoReady = true;
       video.play();
+      console.log('Video ready:', video.videoWidth, video.videoHeight);
     };
   } catch (err) {
     alert('Cannot access camera. Allow permissions and open on HTTPS or localhost.');
-    console.error('Camera error:', err);
+    console.error('Camera start error:', err);
   }
 }
 
 startCamera();
 
-// Get formatted date
+// Format date like YYYY.MM.DD
 function getDate() {
   const d = new Date();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -37,7 +38,7 @@ function getDate() {
   return `${d.getFullYear()}.${month}.${day}`;
 }
 
-// Countdown before photo
+// Countdown before capture
 function startCountdown(callback) {
   let count = 3;
   countdownEl.textContent = count;
@@ -62,11 +63,13 @@ function capturePhoto() {
     return;
   }
 
+  // Use actual video dimensions
   const w = video.videoWidth;
   const h = video.videoHeight;
   const pad = 20;
   const bottom = 40;
 
+  // Set canvas size
   canvas.width = w + pad * 2;
   canvas.height = h + pad * 2 + bottom;
 
@@ -76,23 +79,23 @@ function capturePhoto() {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the video image
+  // Draw the video frame
   ctx.drawImage(video, pad, pad, w, h);
 
-  // Draw the date
+  // Draw date
   const date = getDate();
   ctx.fillStyle = '#666';
   ctx.font = '16px Arial';
   ctx.textAlign = 'right';
   ctx.fillText(date, canvas.width - pad, canvas.height - 15);
 
-  // Set image preview
+  // Show image in preview
   const imgData = canvas.toDataURL('image/png');
   photoResult.src = imgData;
   dateText.textContent = date;
   photoPreview.style.display = 'block';
 
-  // Set download link
+  // Download link
   downloadLink.href = imgData;
 }
 
