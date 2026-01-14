@@ -2,13 +2,11 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const takePhotoBtn = document.getElementById('takePhotoBtn');
-const photoResult = document.getElementById('photoResult');
 const photoPreview = document.getElementById('photoPreview');
 const countdownEl = document.getElementById('countdown');
-const dateText = document.getElementById('dateText');
 const downloadLink = document.getElementById('downloadLink');
 
-// Function to start the camera safely
+// Start the camera
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -18,8 +16,6 @@ async function startCamera() {
     console.error('Camera error:', err);
   }
 }
-
-// Start camera immediately
 startCamera();
 
 // Get formatted date
@@ -30,7 +26,7 @@ function getDate() {
   return `${d.getFullYear()}.${month}.${day}`;
 }
 
-// Countdown before taking photo
+// Countdown before photo
 function startCountdown(callback) {
   let count = 3;
   countdownEl.textContent = count;
@@ -42,16 +38,16 @@ function startCountdown(callback) {
       countdownEl.textContent = count;
     } else {
       clearInterval(timer);
-      countdownEl.style.display = 'none';
-      callback();
+      countdownEl.textContent = 'Smile! 😄';
+      setTimeout(() => {
+        countdownEl.style.display = 'none';
+        callback();
+      }, 700);
     }
   }, 1000);
 }
 
-// Take photo button click
-takePhotoBtn.onclick = () => startCountdown(capturePhoto);
-
-// Capture photo function
+// Capture photo
 function capturePhoto() {
   if (!video.srcObject) {
     alert('Camera not started. Please allow camera access.');
@@ -61,34 +57,33 @@ function capturePhoto() {
   const videoWidth = video.videoWidth;
   const videoHeight = video.videoHeight;
   const padding = 20;
-  const bottomSpace = 40;
+  const bottomSpace = 50; // Polaroid bottom
 
-  // Set canvas size for photo + frame + date
   canvas.width = videoWidth + padding * 2;
   canvas.height = videoHeight + padding * 2 + bottomSpace;
 
   const ctx = canvas.getContext('2d');
 
-  // Draw white frame
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the video image
   ctx.drawImage(video, padding, padding, videoWidth, videoHeight);
 
-  // Draw the date at the bottom right
   const date = getDate();
   ctx.fillStyle = '#666';
   ctx.font = '16px Arial';
   ctx.textAlign = 'right';
   ctx.fillText(date, canvas.width - padding, canvas.height - 15);
 
-  // Convert canvas to image and show in preview
   const imgData = canvas.toDataURL('image/png');
-  photoResult.src = imgData;
-  dateText.textContent = date;
-  photoPreview.style.display = 'block';
+  photoPreview.src = imgData;
 
-  // Set download link
+  photoPreview.classList.remove('show');
+  setTimeout(() => photoPreview.classList.add('show'), 50);
+
   downloadLink.href = imgData;
+  downloadLink.download = `photo_${date}.png`;
 }
+
+// Button click
+takePhotoBtn.onclick = () => startCountdown(capturePhoto);
