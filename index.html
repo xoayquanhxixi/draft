@@ -1,26 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Korean Polaroid Photo Booth</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Korean Photo Booth</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="booth-container">
-    <video id="video" autoplay playsinline></video>
-    <button id="takePhotoBtn">📸 Take Photo</button>
 
-    <div id="countdown" class="countdown">3</div>
+<h1>Korean Photo Booth 📸</h1>
 
-    <div id="photoPreview" class="photo-preview">
-      <img id="photoResult" alt="Your photo">
-      <p id="dateText"></p>
-      <a id="downloadLink">Download</a>
-    </div>
-  </div>
+<div id="boothContainer">
+  <video id="video" autoplay playsinline></video>
+  <div id="countdown">3</div>
+</div>
 
-  <canvas id="canvas" style="display:none;"></canvas>
-  <script src="script.js"></script>
+<br>
+<button id="takePhotoBtn">사진 찍기</button>
+
+<div id="photoResultContainer">
+  <img id="photoPreview" alt="Your Photo"/>
+</div>
+<a id="downloadLink" href="#" download>사진 다운로드</a>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+<script src="script.js"></script>
 </body>
 </html>
