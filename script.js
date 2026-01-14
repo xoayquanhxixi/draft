@@ -1,21 +1,32 @@
-// Grab DOM elements
+// DOM elements
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const takePhotoBtn = document.getElementById('takePhotoBtn');
+const photoResult = document.getElementById('photoResult');
 const photoPreview = document.getElementById('photoPreview');
 const countdownEl = document.getElementById('countdown');
+const dateText = document.getElementById('dateText');
 const downloadLink = document.getElementById('downloadLink');
 
-// Start the camera
+let videoReady = false;
+
+// Start camera safely
 async function startCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
     video.srcObject = stream;
+
+    // Wait until video metadata is loaded to get correct width/height
+    video.onloadedmetadata = () => {
+      videoReady = true;
+      video.play();
+    };
   } catch (err) {
-    alert('Cannot access camera. Please allow camera permissions and open this page on HTTPS or localhost.');
+    alert('Cannot access camera. Allow permissions and open on HTTPS or localhost.');
     console.error('Camera error:', err);
   }
 }
+
 startCamera();
 
 // Get formatted date
@@ -38,51 +49,51 @@ function startCountdown(callback) {
       countdownEl.textContent = count;
     } else {
       clearInterval(timer);
-      countdownEl.textContent = 'Smile! 😄';
-      setTimeout(() => {
-        countdownEl.style.display = 'none';
-        callback();
-      }, 700);
+      countdownEl.style.display = 'none';
+      callback();
     }
   }, 1000);
 }
 
 // Capture photo
 function capturePhoto() {
-  if (!video.srcObject) {
-    alert('Camera not started. Please allow camera access.');
+  if (!videoReady) {
+    alert('Video not ready yet. Please wait a moment.');
     return;
   }
 
-  const videoWidth = video.videoWidth;
-  const videoHeight = video.videoHeight;
-  const padding = 20;
-  const bottomSpace = 50; // Polaroid bottom
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  const pad = 20;
+  const bottom = 40;
 
-  canvas.width = videoWidth + padding * 2;
-  canvas.height = videoHeight + padding * 2 + bottomSpace;
+  canvas.width = w + pad * 2;
+  canvas.height = h + pad * 2 + bottom;
 
   const ctx = canvas.getContext('2d');
 
+  // Draw white frame
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.drawImage(video, padding, padding, videoWidth, videoHeight);
+  // Draw the video image
+  ctx.drawImage(video, pad, pad, w, h);
 
+  // Draw the date
   const date = getDate();
   ctx.fillStyle = '#666';
   ctx.font = '16px Arial';
   ctx.textAlign = 'right';
-  ctx.fillText(date, canvas.width - padding, canvas.height - 15);
+  ctx.fillText(date, canvas.width - pad, canvas.height - 15);
 
+  // Set image preview
   const imgData = canvas.toDataURL('image/png');
-  photoPreview.src = imgData;
+  photoResult.src = imgData;
+  dateText.textContent = date;
+  photoPreview.style.display = 'block';
 
-  photoPreview.classList.remove('show');
-  setTimeout(() => photoPreview.classList.add('show'), 50);
-
+  // Set download link
   downloadLink.href = imgData;
-  downloadLink.download = `photo_${date}.png`;
 }
 
 // Button click
