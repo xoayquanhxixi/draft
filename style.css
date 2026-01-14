@@ -1,67 +1,83 @@
 body {
-  font-family: 'Nanum Gothic', Arial, sans-serif; /* Korean-friendly font */
+  font-family: 'Arial', sans-serif;
+  background: #f2e7d5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.booth-container {
   text-align: center;
-  background: #ffe4e1; /* soft pink Korean photobooth vibe */
-  padding: 20px;
-}
-#boothContainer {
-  display: inline-block;
   position: relative;
-  border: 8px solid #fff;
-  border-radius: 10px;
-  background: #fdfdfd;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
+
 video {
-  display: block;
-  max-width: 360px; /* Korean booth ratio */
-  height: auto;
-  border-radius: 5px;
+  width: 400px;
+  height: 300px;
+  border-radius: 10px;
+  border: 5px solid #fff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-#countdown {
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff6f61;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  transition: transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.countdown {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 48px;
-  font-weight: bold;
-  color: #ff4b5c;
-  display: none;
-  text-shadow: 2px 2px #fff;
-}
-#photoPreview {
-  display: none;
-  margin-top: 20px;
-  border: 12px solid white;
-  border-bottom-width: 60px; /* Polaroid bottom bigger */
-  max-width: 90%;
-  opacity: 0;
-  transition: opacity 1s ease-in;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-}
-#photoPreview.show {
-  display: block;
-  opacity: 1;
-}
-button {
-  padding: 10px 25px;
-  font-size: 18px;
-  margin-top: 15px;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  background-color: #ff6f91;
+  font-size: 80px;
   color: white;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.1s;
+  text-shadow: 2px 2px 5px black;
+  display: none;
 }
-button:hover {
-  transform: scale(1.05);
+
+.photo-preview {
+  margin-top: 20px;
+  display: none;
+  animation: fadeIn 0.6s ease forwards;
 }
-a {
+
+.photo-preview img {
+  width: 360px;
+  border: 10px solid white;
+  padding-bottom: 40px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  border-radius: 6px;
+}
+
+.photo-preview p {
+  margin: 8px 0 0 0;
+  font-family: 'Courier New', monospace;
+  color: #555;
+}
+
+.photo-preview a {
   display: inline-block;
-  margin-top: 12px;
-  font-size: 16px;
+  margin-top: 5px;
   text-decoration: none;
-  color: #007BFF;
+  color: #ff6f61;
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
