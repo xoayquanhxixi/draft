@@ -1,14 +1,12 @@
-// DOM elements
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const takePhotoBtn = document.getElementById('takePhotoBtn');
-const photoResult = document.getElementById('photoResult');
 const photoPreview = document.getElementById('photoPreview');
 const countdownEl = document.getElementById('countdown');
-const dateText = document.getElementById('dateText');
 const downloadLink = document.getElementById('downloadLink');
 
-let videoReady = false;
+const padding = 20;
+const bottomSpace = 60; // Polaroid bottom
 
 // Start camera
 async function startCamera() {
@@ -17,18 +15,20 @@ async function startCamera() {
     video.srcObject = stream;
 
     video.onloadedmetadata = () => {
-      videoReady = true;
       video.play();
+      // Fixed Korean booth ratio (3:4)
+      video.width = 360;
+      video.height = 480;
+      console.log('Camera ready');
     };
   } catch (err) {
-    alert('Cannot access camera. Allow permissions and use HTTPS or localhost.');
-    console.error('Camera error:', err);
+    alert('카메라 접근이 필요합니다.');
+    console.error(err);
   }
 }
-
 startCamera();
 
-// Format date YYYY.MM.DD
+// Date in YYYY.MM.DD
 function getDate() {
   const d = new Date();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -36,7 +36,7 @@ function getDate() {
   return `${d.getFullYear()}.${month}.${day}`;
 }
 
-// Countdown before capture
+// Countdown with Korean “치~즈!”
 function startCountdown(callback) {
   let count = 3;
   countdownEl.textContent = count;
@@ -48,49 +48,48 @@ function startCountdown(callback) {
       countdownEl.textContent = count;
     } else {
       clearInterval(timer);
-      countdownEl.style.display = 'none';
-      callback();
+      countdownEl.textContent = '치~즈! 😄';
+      setTimeout(() => {
+        countdownEl.style.display = 'none';
+        callback();
+      }, 700);
     }
   }, 1000);
 }
 
 // Capture photo
 function capturePhoto() {
-  if (!videoReady) {
-    alert('Video not ready yet. Please wait a moment.');
+  if (!video.srcObject || video.videoWidth === 0) {
+    alert('카메라 준비 중...');
     return;
   }
 
-  const w = 400; // fixed width for consistency
-  const h = (video.videoHeight / video.videoWidth) * w;
-  const pad = 20;
-  const bottom = 40;
+  const videoWidth = video.width;
+  const videoHeight = video.height;
 
-  canvas.width = w + pad * 2;
-  canvas.height = h + pad * 2 + bottom;
+  canvas.width = videoWidth + padding * 2;
+  canvas.height = videoHeight + padding * 2 + bottomSpace;
+
   const ctx = canvas.getContext('2d');
 
-  // White Polaroid frame
+  // Polaroid-style frame
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw video
-  ctx.drawImage(video, pad, pad, w, h);
+  ctx.drawImage(video, padding, padding, videoWidth, videoHeight);
 
-  // Draw date
   const date = getDate();
-  ctx.fillStyle = '#555';
-  ctx.font = 'bold 16px Courier New';
+  ctx.fillStyle = '#666';
+  ctx.font = '16px Nanum Gothic, Arial';
   ctx.textAlign = 'right';
-  ctx.fillText(date, canvas.width - pad, canvas.height - 15);
+  ctx.fillText(date, canvas.width - padding, canvas.height - 15);
 
-  // Show preview
   const imgData = canvas.toDataURL('image/png');
-  photoResult.src = imgData;
-  dateText.textContent = date;
-  photoPreview.style.display = 'block';
+  photoPreview.src = imgData;
 
-  // Download link
+  photoPreview.classList.remove('show');
+  setTimeout(() => photoPreview.classList.add('show'), 50);
+
   downloadLink.href = imgData;
   downloadLink.download = `photo_${date}.png`;
 }
