@@ -10,27 +10,25 @@ const downloadLink = document.getElementById('downloadLink');
 
 let videoReady = false;
 
-// Start camera safely
+// Start camera
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
     video.srcObject = stream;
 
-    // Wait until video metadata loads to get correct dimensions
     video.onloadedmetadata = () => {
       videoReady = true;
       video.play();
-      console.log('Video ready:', video.videoWidth, video.videoHeight);
     };
   } catch (err) {
-    alert('Cannot access camera. Allow permissions and open on HTTPS or localhost.');
-    console.error('Camera start error:', err);
+    alert('Cannot access camera. Allow permissions and use HTTPS or localhost.');
+    console.error('Camera error:', err);
   }
 }
 
 startCamera();
 
-// Format date like YYYY.MM.DD
+// Format date YYYY.MM.DD
 function getDate() {
   const d = new Date();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -63,33 +61,30 @@ function capturePhoto() {
     return;
   }
 
-  // Use actual video dimensions
-  const w = video.videoWidth;
-  const h = video.videoHeight;
+  const w = 400; // fixed width for consistency
+  const h = (video.videoHeight / video.videoWidth) * w;
   const pad = 20;
   const bottom = 40;
 
-  // Set canvas size
   canvas.width = w + pad * 2;
   canvas.height = h + pad * 2 + bottom;
-
   const ctx = canvas.getContext('2d');
 
-  // Draw white frame
+  // White Polaroid frame
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the video frame
+  // Draw video
   ctx.drawImage(video, pad, pad, w, h);
 
   // Draw date
   const date = getDate();
-  ctx.fillStyle = '#666';
-  ctx.font = '16px Arial';
+  ctx.fillStyle = '#555';
+  ctx.font = 'bold 16px Courier New';
   ctx.textAlign = 'right';
   ctx.fillText(date, canvas.width - pad, canvas.height - 15);
 
-  // Show image in preview
+  // Show preview
   const imgData = canvas.toDataURL('image/png');
   photoResult.src = imgData;
   dateText.textContent = date;
@@ -97,6 +92,7 @@ function capturePhoto() {
 
   // Download link
   downloadLink.href = imgData;
+  downloadLink.download = `photo_${date}.png`;
 }
 
 // Button click
